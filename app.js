@@ -309,6 +309,16 @@ function renderSync() {
 }
 
 /* ---------- édition ---------- */
+// Verrou du défilement de la page pendant l'édition (fiable sur mobile, y compris iOS)
+let SCROLL_Y = 0;
+function lockScroll() {
+  SCROLL_Y = window.scrollY;
+  Object.assign(document.body.style, { position: 'fixed', top: `-${SCROLL_Y}px`, left: '0', right: '0', overflow: 'hidden' });
+}
+function unlockScroll() {
+  Object.assign(document.body.style, { position: '', top: '', left: '', right: '', overflow: '' });
+  window.scrollTo(0, SCROLL_Y);
+}
 function openEditor(id, preset) {
   EDITING = id;
   const p = id ? DATA.projects.find(x => x.id === id) : { category: 'dev', status: 'actif', links: [], ...preset };
@@ -326,6 +336,8 @@ function openEditor(id, preset) {
   f.repo.value = p.repo || '';
   $('#editMsg').textContent = '';
   $('#editor').showModal();
+  lockScroll();
+  $('#editForm').scrollTop = 0;
 }
 function closeEditor() { $('#editor').close(); EDITING = null; PROMOTING = null; }
 
@@ -449,7 +461,7 @@ document.addEventListener('click', (e) => {
 });
 $('#loginForm').addEventListener('submit', doLogin);
 $('#editForm').addEventListener('submit', saveEditor);
-$('#editor').addEventListener('close', () => { EDITING = null; PROMOTING = null; });
+$('#editor').addEventListener('close', () => { EDITING = null; PROMOTING = null; unlockScroll(); });
 $('#ideaForm').addEventListener('submit', addIdea);
 $('#noteForm').addEventListener('submit', addNote);
 
